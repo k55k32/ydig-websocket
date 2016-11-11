@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/k55k32/ydig-websocket/issues"
   },
-  "homepage": "https://github.com/k55k32/ydig-websocket#readme"
+  "homepage": "https://github.com/k55k32/ydig-websocket#readme",
+  "dependencies": {
+    "ws": "^1.1.1"
+  }
 }
