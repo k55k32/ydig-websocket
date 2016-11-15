@@ -1,9 +1,11 @@
 import ws from 'ws'
-import dispatch from './controller/DispatchController'
+import DispatchController from './controller/DispatchController'
 const wsServer = ws.Server({ port: 9001 })
+const globelMap = {}
+const sessionMap = {}
 
 wsServer.on('connection', ws => {
-  dispatch(ws)
+  new DispatchController(ws, globelMap, sessionMap)
 })
 
 
