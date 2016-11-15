@@ -1,9 +1,6 @@
 const MessageService = {
-    chat (data) {
-      this.sendToSameRoom({
-        type: 'chat',
-        data: data
-      })
+    chat (msg) {
+      this.sendToSameRoom(msg, false)
     }
 }
 
@@ -21,7 +18,15 @@ export default class DispatchController {
       let currentUser = login(token, sessionMap, ws)
       if (currentUser) {
         this.currentUser = currentUser
-        MessageService[type].call(this, data)
+        let eventFunction = MessageService[type]
+        if (typeof eventFunction === 'function') {
+          eventFunction.call(this, {
+            type: type,
+            data: data
+          })
+        } else {
+          console.log('unknow message type', msg)
+        }
       }
     })
 
@@ -34,20 +39,21 @@ export default class DispatchController {
       console.log('websocket error')
     })
     this.ws = ws
+
+    this.getRoomUsers  = function (excludeId = ''){
+      return Object.values(sessionMap).filter(user => {
+        return this.currentUser.room === user.room && user.id !== excludeId
+      })
+    }
+
+    this.sendToSameRoom = function (message, excludeSelf = true) {
+      let excludeId = excludeSelf ? this.currentUser.id : ''
+      let users = this.getRoomUsers(excludeId)
+      message.from = {id: this.currentUser.id, nickname: this.currentUser.nickname}
+      sendToUsers(users, message)
+    }
   }
 
-  function getRoomUsers (excludeId = '') {
-    return Object.values(sessionMap).filter(user => {
-      return this.currentUser.room === user.room && user.id !== excludeId
-    })
-  }
-
-  function sendToSameRoom(message, excludeSelf = false) {
-    let excludeId = excludeSelf ? this.currentUser.id : ''
-    let users = this.getRoomUsers(excludeId)
-    message.from = {id: this.currentUser.id, nickname: this.currentUser.nickname}
-    sendToUsers(users, message)
-  }
 }
 
 function sendToUsers (users, message) {
@@ -56,7 +62,7 @@ function sendToUsers (users, message) {
   })
 }
 
-function sendToUser (u) {
+function sendToUser (u, message) {
   if (u.online) {
     message._id = new Date().getTime()
     u.client.send(JSON.stringify(message))

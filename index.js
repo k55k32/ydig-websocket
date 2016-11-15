@@ -5,8 +5,7 @@ const globelMap = {}
 const sessionMap = {}
 
 wsServer.on('connection', ws => {
-  new DispatchController(ws, globelMap, sessionMap)
+  let dispatch = new DispatchController(ws, globelMap, sessionMap)
 })
-
 
 console.log('websocket start:', wsServer.options.port)
