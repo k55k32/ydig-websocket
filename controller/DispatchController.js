@@ -32,7 +32,7 @@ export default class DispatchController {
 
     ws.on('close', () => {
       this.currentUser.online = false
-      console.log('websocket close', this.currentUser)
+      console.log('websocket close', this.currentUser.id)
     })
 
     ws.on('error', () => {
