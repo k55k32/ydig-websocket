@@ -1,6 +1,9 @@
 const MessageService = {
     chat (msg) {
       this.sendToSameRoom(msg, false)
+    },
+    drawAction (msg) {
+      this.sendToSameRoom(msg)
     }
 }
 
@@ -46,6 +49,11 @@ export default class DispatchController {
       })
     }
 
+    /**
+    * send the message to same room people
+    * message: the message data
+    * excludeSelf: exclude self, default is true. that will exclude youself
+    */
     this.sendToSameRoom = function (message, excludeSelf = true) {
       let excludeId = excludeSelf ? this.currentUser.id : ''
       let users = this.getRoomUsers(excludeId)
