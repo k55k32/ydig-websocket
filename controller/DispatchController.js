@@ -4,6 +4,12 @@ const MessageService = {
     },
     drawAction (msg) {
       this.sendToSameRoom(msg)
+    },
+    drawImage (msg) {
+      this.sendToSameRoom(msg)
+    },
+    login (msg) {
+      console.log('user login:', msg)
     }
 }
 
