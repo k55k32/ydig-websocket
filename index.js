@@ -1,11 +1,13 @@
 import ws from 'ws'
-import DispatchController from './controller/DispatchController'
+import ConnectController from './controller/ConnectController'
 const wsServer = ws.Server({ port: 9001 })
-const globelMap = {}
-const sessionMap = {}
+const globalMap = {
+  userMap: {}
+}
 
 wsServer.on('connection', ws => {
-  let dispatch = new DispatchController(ws, globelMap, sessionMap)
+  console.log('new connect coming')
+  new ConnectController(ws, globalMap)
 })
 
 console.log('websocket start:', wsServer.options.port)
