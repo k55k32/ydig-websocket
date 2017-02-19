@@ -1,16 +1,11 @@
 import RoomService from './RoomService'
 import UserService from './UserService'
 export default {
-  login (ctx) {
-    UserService.login(ctx)
-  },
-  changename (ctx) {
-    UserService.changeName(ctx)
-  },
-  createRoom (ctx) {
-    RoomService.create(ctx)
-  },
+  login: UserService.login,
+  changename: UserService.changeName,
+  createRoom: RoomService.create,
   enterRoom: RoomService.enter,
+  leaveRoom: RoomService.leave,
   default ({ message }) {
     console.log('unknow message', message)
   }

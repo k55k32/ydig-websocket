@@ -9,6 +9,33 @@ function getRoomId() {
   }
   return global.roomId
 }
+function getUserArray(currentUsers) {
+  return Object.values(currentUsers).map(u => {
+    return {
+      username: u.username,
+      id: u.id
+    }
+  })
+}
+function userLeave (ctx) {
+  const { userClient, currentUsers, roomMap, currentRoom, sendToSameRoom } = ctx
+  if (currentRoom && currentRoom.status === 1) {
+    Object.values(currentUsers).forEach(u => {
+      if (userClient.id === u.id) {
+        delete currentUsers[u.id]
+      }
+    })
+    sendToSameRoom({id: userClient.id}, 'userLeave')
+  }
+}
+
+global.$on('userLeave', userLeave)
+
+global.$on('UserReLine', ({userClient, roomUser}) => {
+  const users = roomUser[userClient.currentRoomId] || {}
+  users[userClient.id] = userClient
+  roomUser[userClient.currentRoomId] = users
+})
 
 export default {
   create ({ data, userClient, roomMap, roomUser, send }) {
@@ -24,40 +51,32 @@ export default {
       gameTime: 60
     }
     roomMap[room.id] = room
-    roomUser[room.id] = [userClient]
-    userClient.currentRoomId = room.id
+    roomUser[room.id] = {}
     send(room)
   },
   enter ({ data, userClient, roomMap, roomUser, send, sendToSameRoom }) {
     const room = roomMap[data.id]
     if (!room) {
-      return send({}, 'roomClose')
+      return send({message: '房间已关闭'}, 'roomClose')
     }
-    const roomUsers = roomUser[room.id]
-    const isReLink = roomUsers.indexOf(userClient)
+    const roomUsers = roomUser[room.id] || []
+    roomUser[room.id] = roomUsers
+    const isReLink = roomUsers[userClient.id]
     if (room.joined >= room.playNumber) {
       return send({message: '房间人数已满，不可加入'}, 'roomFull')
-    } else if (room.status === 2 && !isReLink) {
-      return send({message: '该房间游戏已开始，不可加入'}, 'roomBegin')
-    } else if (isReLink){
-      sendToSameRoom({id: userClient.id, username: userClient.username}, 'userBack')
+    } else if (room.status === 2) {
+      if (isReLink) {
+        return sendToSameRoom({id: userClient.id, username: userClient.username}, 'userBack')
+      } else {
+        return send({message: '该房间游戏已开始，不可加入'}, 'roomBegin')
+      }
     } else {
-      roomUsers.push(userClient)
-      room.joined++
-      send({...room, users: roomUsers.map(u => {
-        return {
-          username: u.username,
-          id: u.id
-        }
-      })})
-      sendToSameRoom({id: userClient.id, username: userClient.username}, 'userEnter')
+      roomUsers[userClient.id] = userClient
+      room.joined = Object.keys(roomUsers).length
+      userClient.currentRoomId = room.id
+      send(room)
+      sendToSameRoom(getUserArray(roomUsers), 'userEnter')
     }
   },
-  leave ({ userClient, currentUsers, currentRoom, sendToSameRoom }) {
-    const index = currentUsers.indexOf(userClient)
-    currentUsers.splice(index, 1)
-    currentRoom.joined--
-    userClient.currentRoomId = null
-    sendToSameRoom({id: userClient.id}, 'userLeave')
-  }
+  leave: userLeave
 }

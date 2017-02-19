@@ -1,4 +1,5 @@
 import ws from 'ws'
+import GlobalEmitService from './service/GlobalEmitService'
 import ConnectController from './controller/ConnectController'
 const wsServer = ws.Server({ port: 9001 })
 const globalMap = {
