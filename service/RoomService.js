@@ -38,6 +38,9 @@ global.$on('UserReLine', ({userClient, roomUser}) => {
 })
 
 export default {
+  list ({send, roomMap}) {
+    send(Object.values(roomMap))
+  },
   create ({ data, userClient, roomMap, roomUser, send }) {
     const room = {
       id: getRoomId(),
@@ -57,7 +60,7 @@ export default {
   enter ({ data, userClient, roomMap, roomUser, send, sendToSameRoom }) {
     const room = roomMap[data.id]
     if (!room) {
-      return send({message: '房间已关闭'}, 'roomClose')
+      return send({message: '没有找到该房间，请确认房间号'}, 'roomClose')
     }
     const roomUsers = roomUser[room.id] || []
     roomUser[room.id] = roomUsers

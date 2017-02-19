@@ -6,6 +6,7 @@ export default {
   createRoom: RoomService.create,
   enterRoom: RoomService.enter,
   leaveRoom: RoomService.leave,
+  roomList: RoomService.list,
   default ({ message }) {
     console.log('unknow message', message)
   }
