@@ -4,7 +4,9 @@ import SenderService from '../service/SenderService'
 export default class ConnectController {
   constructor (ws, globalMap) {
     this.token = uuid.v4()
+    this.id = uuid.v4()
     this.username = ''
+    this.currentRoomId = null
     this.ws = ws
     this.isOnline = true
     const userClient = this
@@ -17,9 +19,16 @@ export default class ConnectController {
           type: messageData.type,
           data: messageData.data,
           userClient: userClient,
-          userMap: globalMap.userMap,
-          send (data) {
-            SenderService.sendToUser(userClient, data, messageData.type)
+          ...globalMap,
+          currentRoom: globalMap.roomMap[userClient.id],
+          currentUsers: globalMap.roomUser[userClient.currentRoomId],
+          send (data, type = messageData.type) {
+            SenderService.sendToUser(userClient, data, type)
+          },
+          sendToSameRoom (data, type = messageData.type) {
+            const currentRoomId = userClient.currentRoomId
+            const users = globalMap.roomUser[currentRoomId]
+            SenderService.sendToUsers(users, data, type)
           }
         })
       } catch (e) {

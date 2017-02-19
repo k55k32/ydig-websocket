@@ -2,7 +2,9 @@ import ws from 'ws'
 import ConnectController from './controller/ConnectController'
 const wsServer = ws.Server({ port: 9001 })
 const globalMap = {
-  userMap: {}
+  userMap: {},
+  roomMap: {},
+  roomUser: {}
 }
 
 wsServer.on('connection', ws => {
