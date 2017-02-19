@@ -60,7 +60,7 @@ export default {
   enter ({ data, userClient, roomMap, roomUser, send, sendToSameRoom }) {
     const room = roomMap[data.id]
     if (!room) {
-      return send({message: '没有找到该房间，请确认房间号'}, 'roomClose')
+      return send({message: '房间不存在'}, 'roomClose')
     }
     const roomUsers = roomUser[room.id] || []
     roomUser[room.id] = roomUsers
