@@ -34,16 +34,6 @@ function userLeave (ctx) {
 
 global.$on('userLeave', userLeave)
 
-global.$on('UserReLine', ({currentRoom, userClient, roomUser}) => {
-  if (currentRoom && currentRoom.status === 2) {
-    const users = roomUser[userClient.currentRoomId] || {}
-    users[userClient.id] = userClient
-    roomUser[userClient.currentRoomId] = users
-    send({id: currentRoom.id}, 'returnRoom')
-    sendToSameRoom({id: userClient.id}, 'backToGame')
-  }
-})
-
 function sendToSub(userMap, room, type) {
   if (room.type === '1') {
     Object.values(userMap).forEach(user => {

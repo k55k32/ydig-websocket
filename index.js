@@ -5,7 +5,8 @@ const wsServer = ws.Server({ port: 9001 })
 const globalMap = {
   userMap: {},
   roomMap: {},
-  roomUser: {}
+  roomUser: {},
+  gameMap: {}
 }
 
 wsServer.on('connection', ws => {

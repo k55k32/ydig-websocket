@@ -5,6 +5,7 @@ export default {
     const loginUser = () => {
       const sessionUser = userClient
       const token = sessionUser.token
+      const id = sessionUser.id
       userMap[token] = sessionUser
       send({
         id: userClient.id,
@@ -19,12 +20,12 @@ export default {
         userClient.username = offLineUser.username
         userClient.token = offLineUser.token
         userClient.id = offLineUser.id
+        userClient.inGame = offLineUser.inGame
         userClient.currentRoomId = offLineUser.currentRoomId
       } else {
         userClient.username = user.username
         userClient.token = user.token
       }
-      global.$emit('UserReLine', ctx)
       loginUser()
     } else {
       const token = userClient.token

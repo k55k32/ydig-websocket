@@ -1,5 +1,6 @@
 import RoomService from './RoomService'
 import UserService from './UserService'
+import GameService from './GameService'
 export default {
   login: UserService.login,
   changename: UserService.changeName,
@@ -9,7 +10,12 @@ export default {
   roomList: RoomService.list,
   enterIndex: RoomService.changeSub,
   leaveIndex: RoomService.changeUnSub,
-  default ({ message }) {
-    console.log('unknow message', message)
+  chatMsg: GameService.msg,
+  beginGame: GameService.begin,
+  gameData: GameService.getData,
+  drawAction: GameService.drawAction,
+  drawImage: GameService.drawImage,
+  default ({ type }) {
+    console.log('unknow message', type)
   }
 }
