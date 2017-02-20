@@ -7,6 +7,7 @@ export default {
       const token = sessionUser.token
       userMap[token] = sessionUser
       send({
+        id: userClient.id,
         token: sessionUser.token,
         username: sessionUser.username
       })

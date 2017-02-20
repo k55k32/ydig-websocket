@@ -10,6 +10,9 @@ export default class ConnectController {
     this.currentRoomId = null
     this.isOnline = true
     this.ws = ws
+    this.send = (data, type) => {
+      SenderService.sendToUser(this, data, type)
+    }
     const userClient = this
     ws.on('message', (message) => {
       try{

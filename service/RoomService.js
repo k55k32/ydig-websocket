@@ -18,30 +18,73 @@ function getUserArray(currentUsers) {
   })
 }
 function userLeave (ctx) {
-  const { userClient, currentUsers, roomMap, currentRoom, sendToSameRoom } = ctx
+  const { userClient, currentUsers, roomMap, userMap, currentRoom, sendToSameRoom } = ctx
   if (currentRoom && currentRoom.status === 1) {
     Object.values(currentUsers).forEach(u => {
       if (userClient.id === u.id) {
         delete currentUsers[u.id]
       }
     })
+    currentRoom.joined = Object.values(currentUsers).length
     sendToSameRoom({id: userClient.id}, 'userLeave')
+    console.log('leave room', currentRoom)
+    global.$emit('room-changed', {userMap, roomChangeData: currentRoom})
   }
 }
 
 global.$on('userLeave', userLeave)
 
-global.$on('UserReLine', ({userClient, roomUser}) => {
-  const users = roomUser[userClient.currentRoomId] || {}
-  users[userClient.id] = userClient
-  roomUser[userClient.currentRoomId] = users
+global.$on('UserReLine', ({currentRoom, userClient, roomUser}) => {
+  if (currentRoom && currentRoom.status === 2) {
+    const users = roomUser[userClient.currentRoomId] || {}
+    users[userClient.id] = userClient
+    roomUser[userClient.currentRoomId] = users
+    send({id: currentRoom.id}, 'returnRoom')
+    sendToSameRoom({id: userClient.id}, 'backToGame')
+  }
+})
+
+function sendToSub(userMap, room, type) {
+  if (room.type === '1') {
+    Object.values(userMap).forEach(user => {
+      if (user.changeSub) {
+        user.send(room, type)
+      }
+    })
+  }
+}
+
+global.$on('room-changed', ({userMap, roomChangeData}) => {
+  sendToSub(userMap, {id: roomChangeData.id, type: roomChangeData.type, joined: roomChangeData.joined, status: roomChangeData.status}, 'roomChanged')
+})
+
+global.$on('room-created', ({userMap, roomChangeData}) => {
+  sendToSub(userMap, roomChangeData, 'roomCreated')
 })
 
 export default {
-  list ({send, roomMap}) {
-    send(Object.values(roomMap))
+  changeUnSub ({userClient}) {
+    userClient.changeSub = false
   },
-  create ({ data, userClient, roomMap, roomUser, send }) {
+  changeSub ({userClient}) {
+    userClient.changeSub = true
+  },
+  list ({send, roomMap, roomUser}) {
+    const rooms = Object.values(roomMap).filter(room => {
+      room.joined = Object.values(roomUser[room.id]).length
+      return room.joined > 0 && room.status == 1 && room.type === '1'
+    }).sort((a, b) => {
+      if (a.joined > b.joined) {
+        return 1
+      } else if (a.createTime > b.createTime) {
+        return 1
+      } else {
+        return 0
+      }
+    })
+    send(rooms)
+  },
+  create ({ data, userClient, roomMap, roomUser, userMap, send }) {
     const room = {
       id: getRoomId(),
       name: data.name,
@@ -57,12 +100,12 @@ export default {
     roomUser[room.id] = {}
     send(room)
   },
-  enter ({ data, userClient, roomMap, roomUser, send, sendToSameRoom }) {
+  enter ({ data, userClient, roomMap, roomUser, send, sendToSameRoom, userMap }) {
     const room = roomMap[data.id]
     if (!room) {
       return send({message: '房间不存在'}, 'roomClose')
     }
-    const roomUsers = roomUser[room.id] || []
+    const roomUsers = roomUser[room.id] || {}
     roomUser[room.id] = roomUsers
     const isReLink = roomUsers[userClient.id]
     if (room.joined >= room.playNumber) {
@@ -75,10 +118,15 @@ export default {
       }
     } else {
       roomUsers[userClient.id] = userClient
-      room.joined = Object.keys(roomUsers).length
+      room.joined = Object.values(roomUsers).length
       userClient.currentRoomId = room.id
       send(room)
       sendToSameRoom(getUserArray(roomUsers), 'userEnter')
+      if (room.joined === 1) {
+        global.$emit('room-created', {userMap, roomChangeData: room})
+      } else {
+        global.$emit('room-changed', {userMap, roomChangeData: room})
+      }
     }
   },
   leave: userLeave
