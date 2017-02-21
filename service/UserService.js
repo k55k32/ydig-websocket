@@ -10,6 +10,8 @@ export default {
       send({
         id: userClient.id,
         token: sessionUser.token,
+        inGame: sessionUser.inGame,
+        currentRoomId: sessionUser.currentRoomId,
         username: sessionUser.username
       })
       console.log('all users', Object.keys(userMap))

@@ -80,7 +80,7 @@ export default {
       name: data.name,
       createTime: new Date().getTime(),
       playNumber: 8,
-      playTimes: 3,
+      playTimes: 1,
       joined: 1,
       type: data.type,
       status: 1,
