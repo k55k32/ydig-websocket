@@ -15,6 +15,7 @@ export default {
         username: sessionUser.username
       })
       console.log('all users', Object.keys(userMap))
+      global.$emit('userLogin', ctx)
     }
     if (user.token) {
       const offLineUser = userMap[user.token]
@@ -38,5 +39,9 @@ export default {
 
   changeName ({data, userClient}) {
     userClient.username = data.username
+  },
+
+  userNumber ({send, userMap}) {
+    send(Object.values(userMap).filter(u => u.isOnline).length)
   }
 }

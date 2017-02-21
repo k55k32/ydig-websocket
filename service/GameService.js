@@ -1,10 +1,15 @@
 const firstScroe = 3
 const sencondScore = 2
 const minScore = 1
-let gameKey = 1
+let gameKey = 0
 function getGameKey () {
-  const key = gameKey++
-  return ['测试' + key, '类型测试' + key]
+  let keyWord = global.allKeys[gameKey++]
+  if (!keyWord) {
+    global.randomAllKeys()
+    gameKey = 0
+    return global.allKeys[gameKey++]
+  }
+  return keyWord
 }
 
 function toNextPlayer (ctx) {
@@ -193,7 +198,7 @@ export default {
 
   },
   begin (ctx) {
-    const {userClient, currentRoom, sendToSameRoom, userArray, gameMap} = ctx
+    const {userClient, currentRoom, sendToSameRoom, userArray, gameMap, userMap} = ctx
     if (userArray.length > 1 && userClient.id === userArray[0].id) { // 判断人数是否大于2人，并且当前人是否是房主
       currentRoom.status = 2
       userArray.forEach(u => u.inGame = true)
@@ -211,6 +216,7 @@ export default {
           time: currentRoom.gameTime
         }
       }
+      global.$emit('room-changed', {userMap, roomChangeData: {id: currentRoom.id, type: currentRoom.type, status: currentRoom.status}})
       sendToSameRoom({id: currentRoom.id}, 'gameBegin')
     }
   },

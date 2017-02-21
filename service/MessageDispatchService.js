@@ -15,6 +15,7 @@ export default {
   gameData: GameService.getData,
   drawAction: GameService.drawAction,
   drawImage: GameService.drawImage,
+  userNumber: UserService.userNumber,
   default ({ type }) {
     console.log('unknow message', type)
   }

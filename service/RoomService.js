@@ -30,6 +30,7 @@ function userLeave (ctx) {
     console.log('leave room', currentRoom)
     global.$emit('room-changed', {userMap, roomChangeData: currentRoom})
   }
+  sendUserNumber(userMap)
 }
 
 global.$on('userLeave', userLeave)
@@ -43,6 +44,19 @@ function sendToSub(userMap, room, type) {
     })
   }
 }
+
+function sendUserNumber (userMap) {
+  const onlineUserNumber = Object.values(userMap).filter(u => u.isOnline).length
+  console.log('send userNumber: ', onlineUserNumber)
+  Object.values(userMap).forEach(u => {
+    if (u.changeSub) {
+      u.send(onlineUserNumber, 'userNumber')
+    }
+  })
+}
+global.$on('userLogin', ({userMap}) => {
+  sendUserNumber(userMap)
+})
 
 global.$on('room-changed', ({userMap, roomChangeData}) => {
   sendToSub(userMap, {id: roomChangeData.id, type: roomChangeData.type, joined: roomChangeData.joined, status: roomChangeData.status}, 'roomChanged')
@@ -80,7 +94,7 @@ export default {
       name: data.name,
       createTime: new Date().getTime(),
       playNumber: 8,
-      playTimes: 1,
+      playTimes: 3,
       joined: 1,
       type: data.type,
       status: 1,
@@ -90,7 +104,7 @@ export default {
     roomUser[room.id] = {}
     send(room)
   },
-  enter ({ data, userClient, roomMap, roomUser, send, sendToSameRoom, userMap }) {
+  enter ({ data, userClient, roomMap, roomUser, send, sendToSameRoom, userMap, sendError }) {
     const room = roomMap[data.id]
     if (!room) {
       return send({message: '房间不存在'}, 'roomClose')
@@ -99,13 +113,9 @@ export default {
     roomUser[room.id] = roomUsers
     const isReLink = roomUsers[userClient.id]
     if (room.joined >= room.playNumber) {
-      return send({message: '房间人数已满，不可加入'}, 'roomFull')
+      return sendError({msg: '房间人数已满，不可加入'})
     } else if (room.status === 2) {
-      if (isReLink) {
-        return sendToSameRoom({id: userClient.id, username: userClient.username}, 'userBack')
-      } else {
-        return send({message: '该房间游戏已开始，不可加入'}, 'roomBegin')
-      }
+      return sendError({msg: '该房间游戏已开始，不可加入'})
     } else {
       roomUsers[userClient.id] = userClient
       room.joined = Object.values(roomUsers).length
