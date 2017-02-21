@@ -1,20 +1,12 @@
-this project is a server by 'you draw I guess' game client
+这是 你画我猜 的 `websocket` 端。
 
-use the babel-cli builder the project
+## 快速运行
+### 安装依赖
+```bash
+npm install
+```
 
-the run command: babel-node index.js
-
-
-## plain
-底部用户列表
-用户离线 上线效果
-聊天优化
-
-完成 倒计时结束后逻辑
-完成 下一个用户逻辑
-完成 用户词语画像 缓存逻辑。。。
-在线人数查看
-About me
-前端： 完成，当前用户列表逻辑
-前端： 完成，用户离线后逻辑
-前端： 完成，用户加分效果---
+### 开发者模式运行，默认 ws://localhost:9001 端口，如果要配合前端开发，前端 main.js 里面的地址需要填入这个服务的地址
+```bash
+npm run dev
+```
