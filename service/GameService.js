@@ -12,44 +12,54 @@ function getGameKey () {
   return keyWord
 }
 
+function findNextUser(ctx) {
+  const { sendToSameRoom, currentGame, currentUsers, userArray, userMap } = ctx
+  const { playInfo, users, currentTimes, playTimes, userDraw } = currentGame
+
+  const currentPlayer = playInfo.player
+  const onLineUsers = getOnlineUser(ctx)
+  if (onLineUsers.length === 0 || currentTimes >= playTimes) { // 如果在线人数为 0 或者 当前游戏次数大于等于 总游戏轮数， 游戏结束
+    gameOver(ctx)
+    return false
+  }
+  userDraw.push({
+    key: playInfo.key[0],
+    play: currentPlayer,
+    username: currentUsers[currentPlayer].username,
+    imageData: playInfo.imageData
+  })
+  let nextPlayer
+  userArray.every((u, index) => {
+    if (u.id === currentPlayer) {
+      nextPlayer = userArray[index + 1]
+      if (!nextPlayer) {  // 如果这个时候没有了，就是当前轮结束了
+        currentGame.currentTimes++
+        nextPlayer = userArray[0]
+      }
+      currentGame.playInfo = { // 重新设置当前playInfo
+        key: getGameKey(),
+        time: currentGame.gameTime,
+        player: nextPlayer.id
+      }
+      if (userMap[nextPlayer.token].isOnline) {
+        sendToSameRoom(null, 'changeGamer')
+        currentGame.start = false
+      } else {
+        findNextUser(ctx)
+      }
+      return false
+    }
+    return true
+  })
+}
+
 function toNextPlayer (ctx) {
   const { sendToSameRoom, currentGame, currentUsers } = ctx
   const { playInfo, users, currentTimes, playTimes, userDraw } = currentGame
   clearTimeout(currentGame.timer)
   sendToSameRoom({key: playInfo.key[0]}, 'thisOver')
   setTimeout(_ => {
-    const currentPlayer = playInfo.player
-    const onLineUsers = getOnlineUser(ctx)
-    userDraw.push({
-      key: playInfo.key[0],
-      play: currentPlayer,
-      username: currentUsers[currentPlayer].username,
-      imageData: playInfo.imageData
-    })
-    let nextPlayer
-    onLineUsers.every((u, index) => {
-      if (u.id === currentPlayer) {
-        nextPlayer = onLineUsers[index + 1]
-        if (!nextPlayer) {  // 如果这个时候没有了，就是当前轮结束了
-          if (currentTimes >= playTimes) { // 如果这个时候相等的话，这次游戏就结束了
-            gameOver(ctx)
-            return false
-          } else { // 进入下一轮
-            currentGame.currentTimes++
-            nextPlayer = onLineUsers[0]
-          }
-        }
-        sendToSameRoom(null, 'changeGamer')
-        currentGame.playInfo = { // 重新设置当前playInfo
-          key: getGameKey(),
-          time: currentGame.gameTime,
-          player: nextPlayer.id
-        }
-        currentGame.start = false
-        return false
-      }
-      return true
-    })
+    findNextUser(ctx)
   }, 5000)
 }
 
@@ -83,15 +93,12 @@ function timeCountDown (ctx) {
   }
 }
 function isAllFinish (ctx) {
-  console.log('is all finish function')
   const {userClient, currentGame, sendToSameRoom} = ctx
   const {userScore, currentTimes, playInfo} = currentGame
   const scoreMap = userScore[playInfo.key[0]]
   const onlineUsers = getOnlineUser(ctx)
   const answerNumber = Object.keys(scoreMap).length
-  console.log(answerNumber, onlineUsers.length)
   if (answerNumber >= onlineUsers.length) {
-    console.log('to next player')
     toNextPlayer(ctx)
   }
   const countScore = {}
@@ -126,7 +133,6 @@ function countScore (ctx) {
     scoreMap[playInfo.player] = 0
   }
   userScore[scoreKey] = scoreMap
-  console.log(scoreKey, scoreMap)
   const currentUserId = userClient.id
   if (scoreMap[currentUserId]) { // 如果已经有分数了，就返回0
     return 0

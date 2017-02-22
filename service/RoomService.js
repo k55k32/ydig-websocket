@@ -27,7 +27,6 @@ function userLeave (ctx) {
     })
     currentRoom.joined = Object.values(currentUsers).length
     sendToSameRoom({id: userClient.id}, 'userLeave')
-    console.log('leave room', currentRoom)
     global.$emit('room-changed', {userMap, roomChangeData: currentRoom})
   }
   sendUserNumber(userMap)
@@ -54,7 +53,10 @@ function sendUserNumber (userMap) {
     }
   })
 }
-global.$on('userLogin', ({userMap}) => {
+global.$on('userLogin', ({userClient, userMap, currentUsers}) => {
+  if (currentUsers) {
+    currentUsers[userClient.id] = userClient
+  }
   sendUserNumber(userMap)
 })
 
@@ -76,7 +78,7 @@ export default {
   list ({send, roomMap, roomUser}) {
     const rooms = Object.values(roomMap).filter(room => {
       room.joined = Object.values(roomUser[room.id]).length
-      return room.joined > 0 && room.status == 1 && room.type === '1'
+      return room.joined > 0 && room.type === '1'
     }).sort((a, b) => {
       if (a.joined > b.joined) {
         return 1

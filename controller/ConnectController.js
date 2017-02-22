@@ -1,7 +1,6 @@
 import uuid from 'node-uuid'
 import MessageDispatchService from '../service/MessageDispatchService'
 import SenderService from '../service/SenderService'
-
 export default class ConnectController {
   constructor (ws, globalMap) {
     this.token = uuid.v4()
@@ -10,12 +9,14 @@ export default class ConnectController {
     this.currentRoomId = null
     this.isOnline = true
     this.ws = ws
+    this.lastLoginTime = new Date().getTime()
     this.send = (data, type) => {
       SenderService.sendToUser(this, data, type)
     }
     const userClient = this
     ws.on('message', (message) => {
       try{
+        userClient.lastLoginTime = new Date().getTime()
         const messageData = JSON.parse(message)
         const processFunction = MessageDispatchService[messageData.type] || MessageDispatchService['default']
         processFunction(buildContext(messageData, globalMap, userClient))
@@ -36,6 +37,9 @@ export default class ConnectController {
       const currentUsers = globalMap.roomUser[userClient.currentRoomId];
       const currentRoom = globalMap.roomMap[userClient.currentRoomId]
       const currentGame = globalMap.gameMap[userClient.currentRoomId]
+      if (currentRoom) {
+        currentRoom.lastActiveTime = new Date().getTime()
+      }
       return {
         type: messageData.type,
         data: messageData.data,

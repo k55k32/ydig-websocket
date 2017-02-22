@@ -12,6 +12,28 @@ const globalMap = {
 
 const fileData = fs.readFileSync('./word.txt','utf-8')
 const allWord = fileData.split('\n')
+
+function deleteExpireUser () {
+  const allUsers = Object.values(globalMap.userMap)
+  const nowTime = new Date().getTime()
+  allUsers.forEach(u => {
+    if (!u.isOnline) {
+      const timeNotTouch = nowTime - u.lastLoginTime
+      if (timeNotTouch > 1000 * 60 * 60 * 2) {
+        console.log('user not touch ', timeNotTouch)
+        u.inGame = false
+        u.currentRoomId = ''
+        delete globalMap.userMap[u.token]
+        console.log('delete user from userMap: ', u.username)
+      }
+    }
+  })
+}
+
+setInterval(_ => {
+  deleteExpireUser()
+}, 100000)
+
 global.allKeys = allWord.map(w => {
   return w.split(':')
 })
@@ -36,7 +58,6 @@ global.randomAllKeys()
 console.log('allGameKeys: ', allWord.length)
 
 wsServer.on('connection', ws => {
-  console.log('new connect coming')
   new ConnectController(ws, globalMap)
 })
 

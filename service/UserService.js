@@ -14,7 +14,7 @@ export default {
         currentRoomId: sessionUser.currentRoomId,
         username: sessionUser.username
       })
-      console.log('all users', Object.keys(userMap))
+      console.log('user login:', sessionUser.username)
       global.$emit('userLogin', ctx)
     }
     if (user.token) {
