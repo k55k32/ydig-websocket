@@ -1,15 +1,10 @@
+import DataService from './DataService'
 const firstScroe = 3
 const sencondScore = 2
 const minScore = 1
-let gameKey = 0
+
 function getGameKey () {
-  let keyWord = global.allKeys[gameKey++]
-  if (!keyWord) {
-    global.randomAllKeys()
-    gameKey = 0
-    return global.allKeys[gameKey++]
-  }
-  return keyWord
+  return DataService.getNextKey()
 }
 
 function findNextUser(ctx) {

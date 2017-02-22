@@ -1,3 +1,4 @@
+import DataService from './DataService'
 export default {
   login (ctx) {
     const { data, userClient, userMap, roomUser, send } = ctx
@@ -32,7 +33,7 @@ export default {
       loginUser()
     } else {
       const token = userClient.token
-      userClient.username = '玩家' + token.charCodeAt(0) + token.charCodeAt(1) + token.charCodeAt(2)
+      userClient.username = DataService.getNextName()
       loginUser()
     }
   },
