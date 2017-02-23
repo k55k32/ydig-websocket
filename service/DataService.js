@@ -35,7 +35,7 @@ export default {
     if (!keyWord) {
       allKeys = getRandomArray(allKeys)
       keyIndex = 0
-      keyWord = allKeys[gameKey++]
+      keyWord = allKeys[keyIndex++]
     }
     return keyWord
   },
